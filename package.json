@@ -1,6 +1,6 @@
 {
-  "name": "backbone-rest",
-  "version": "0.7.2",
+  "name": "fl-backbone-rest",
+  "version": "0.8.0",
   "description": "A RESTful controller for BackboneORM",
   "main": "./lib/index.js",
   "license": "MIT",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vidigami/backbone-rest.git"
+    "url": "https://github.com/founderlab/fl-backbone-rest"
   },
   "homepage": "http://vidigami.github.io/backbone-orm/backbone-rest.html",
   "keywords": [

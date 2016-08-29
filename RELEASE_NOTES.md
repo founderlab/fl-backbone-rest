@@ -1,5 +1,9 @@
 Please refer to the following release notes when upgrading your version of BackboneREST.
 
+### 0.8.0
+* Support for raw templates
+* Support $search param on queries - can be used for case insensitive text matching with mongo / sql dbs. Translates to $like or $regex operator for sql / mongo respectively. Examines the model type to find its db.
+
 ### 0.7.2
 * Bug fix whitelist (had left references as whitelists)
 

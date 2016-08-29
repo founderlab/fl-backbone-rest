@@ -30,6 +30,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
     app.head "#{@route}/:id", @wrap(@head)
     app.head @route, @wrap(@headByQuery)
 
+    @db = (_.result(new @model_type, 'url') || '').split(':')[0]
+
     JoinTableControllerSingleton.generateByOptions(app, options)
 
   requestId: (req) -> JSONUtils.parseField(req.params.id, @model_type, 'id')
@@ -40,7 +42,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
     event_data = {req: req, res: res}
     @constructor.trigger('pre:index', event_data)
 
-    cursor = @model_type.cursor(JSONUtils.parseQuery(req.query))
+    query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
+    cursor = @model_type.cursor(query)
     cursor = cursor.whiteList(@whitelist.index) if @whitelist.index
     cursor.toJSON (err, json) =>
       return @sendError(res, err) if err
@@ -157,5 +160,40 @@ module.exports = class RESTController extends (require './lib/json_controller')
     return callback(new Error "Unrecognized template: #{template_name}") unless template = @templates[template_name]
 
     options = (if @renderOptions then @renderOptions(req, template_name) else {})
+
+    if template.$raw
+      return template json, options, (err, rendered_json) =>
+        return callback(err) if (err)
+        callback(null, @stripRev(rendered_json))
+
     models = if _.isArray(json) then _.map(json, (model_json) => new @model_type(@model_type::parse(model_json))) else new @model_type(@model_type::parse(json))
     JSONUtils.renderTemplate models, template, options, callback
+
+  parseSearchQuery: (query) ->
+    new_query = {}
+    return query unless _.isObject(query) and not query instanceof Date
+
+    for key, value of query
+      if key is '$search'
+        if @db is 'mongodb'
+          new_query.$regex = value
+          new_query.$options = 'i'
+        else
+          new_query.$like = value
+
+      else if _.isArray(value)
+        new_query[key] = (this.parseSearchQuery(item) for item in value)
+      else if _.isObject(value)
+        new_query[key] = this.parseSearchQuery(value)
+      else
+        new_query[key] = value
+    return new_query
+
+    stripRev: (obj) ->
+      return (@stripRev(o) for o in obj) if _.isArray(obj)
+      return obj unless _.isObject(obj) and not obj instanceof Date
+
+      final_obj = {}
+      for key, value of obj when key isnt '_rev'
+        final_obj[key] = @stripRev(value)
+      return final_obj
