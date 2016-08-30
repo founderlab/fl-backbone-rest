@@ -189,11 +189,11 @@ module.exports = class RESTController extends (require './lib/json_controller')
         new_query[key] = value
     return new_query
 
-    stripRev: (obj) ->
-      return (@stripRev(o) for o in obj) if _.isArray(obj)
-      return obj unless _.isObject(obj) and not obj instanceof Date
+  stripRev: (obj) ->
+    return (@stripRev(o) for o in obj) if _.isArray(obj)
+    return obj unless _.isObject(obj) and not obj instanceof Date
 
-      final_obj = {}
-      for key, value of obj when key isnt '_rev'
-        final_obj[key] = @stripRev(value)
-      return final_obj
+    final_obj = {}
+    for key, value of obj when key isnt '_rev'
+      final_obj[key] = @stripRev(value)
+    return final_obj
