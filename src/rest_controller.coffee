@@ -180,7 +180,6 @@ module.exports = class RESTController extends (require './lib/json_controller')
           new_query.$options = 'i'
         else
           new_query.$like = value
-        console.log('new_query', new_query)
 
       else if _.isArray(value)
         new_query[key] = (this.parseSearchQuery(item) for item in value)
