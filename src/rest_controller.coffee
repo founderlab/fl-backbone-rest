@@ -43,7 +43,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
   requestId: (req) => JSONUtils.parseField(req.params.id, @model_type, 'id')
 
   index: (req, res) =>
-    console.log('**>>> index start', req.query)
+    console.log('**>>> index start', @route, req.query)
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
     event_data = {req: req, res: res}
 
@@ -54,7 +54,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       res.json(json)
 
     if @cache
-      key = JSON.stringify(req.query)
+      key = "bbrindex|#{@route}|#{JSON.stringify(req.query)}"
       opts = {}
       opts.ttl = @ttl if (@ttl)
       return @cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), opts, done
@@ -62,7 +62,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @fetchIndexJSON req, done
 
   show: (req, res) =>
-    console.log('**>>> show start', req.query)
+    console.log('**>>> show start', @route, req.query)
     event_data = {req: req, res: res}
     @constructor.trigger('pre:show', event_data)
 
@@ -74,7 +74,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       res.json(json)
 
     if @cache
-      key = JSON.stringify(req.query)
+      key = "bbrshow|#{@route}|#{JSON.stringify(req.query)}"
       opts = {}
       opts.ttl = @ttl if (@ttl)
       return @cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), opts, done
