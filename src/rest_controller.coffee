@@ -32,11 +32,11 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
     @db = (_.result(new @model_type, 'url') || '').split(':')[0]
 
-    unless @templates.show
+    if _.isUndefined(@templates.show)
       schema = @model_type.prototype.sync('sync').schema
       schemaKeys = _.keys(schema.type_overrides).concat(_.keys(schema.fields))
       @templates.show = {$select: schemaKeys}
-    @default_template = 'show' unless @default_template
+    @default_template = 'show' if _.isUndefined(@templates.show)
 
     JoinTableControllerSingleton.generateByOptions(app, options)
 
@@ -45,41 +45,36 @@ module.exports = class RESTController extends (require './lib/json_controller')
   index: (req, res) =>
     console.log('**>>> index start', @route, req.query)
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
-    event_data = {req: req, res: res}
 
     done = (err, json, status) =>
       return @sendError(res, err) if err
       return @sendStatus(res, status) if status
-      console.log('**>>> index done', json.length, '\n\n\n')
+      console.log('**>>> index done', json?.length, '\n\n\n')
       res.json(json)
 
-    if @cache
-      key = "bbrindex|#{@route}|#{JSON.stringify(req.query)}"
-      opts = {}
-      opts.ttl = @ttl if (@ttl)
-      return @cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), opts, done
+    if (cache = @cache?.cache)
+      key = "bbrshow|#{@route}|#{JSON.stringify(req.query)}"
+      return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
     else
       @fetchIndexJSON req, done
 
   show: (req, res) =>
     console.log('**>>> show start', @route, req.query)
-    event_data = {req: req, res: res}
-    @constructor.trigger('pre:show', event_data)
 
     done = (err, json, status) =>
       return @sendError(res, err) if err
       return @sendStatus(res, status) if status
-      console.log('**>>> show done', json.length, '\n\n\n')
-      @constructor.trigger('post:show', _.extend(event_data, {json}))
+      console.log('**>>> show done', json, '\n\n\n')
       res.json(json)
 
-    if @cache
+    req.query.id = @requestId(req)
+    req.query.$one = true
+
+    if (cache = @cache?.cache)
       key = "bbrshow|#{@route}|#{JSON.stringify(req.query)}"
-      opts = {}
-      opts.ttl = @ttl if (@ttl)
-      return @cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), opts, done
+      return cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), @cache, done
     else
-      @fetchIndexJSON req, done
+      @fetchShowJSON req, done
 
   create: (req, res) =>
     json = JSONUtils.parseDates(if @whitelist.create then _.pick(req.body, @whitelist.create) else req.body)
@@ -129,6 +124,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @model_type.destroy id, (err) =>
         return @sendError(res, err) if err
         @constructor.trigger('post:destroy', event_data)
+        if cache = @cache?.cache
+          cache.destroy()
         res.json({})
 
   destroyByQuery: (req, res) =>
@@ -149,11 +146,15 @@ module.exports = class RESTController extends (require './lib/json_controller')
       return @sendError(res, err) if err
       @sendStatus(res, if exists then 200 else 404)
 
-  fetchIndexJSON: (req, callback) =>
-    console.log('**SLOW fetchIndexJSON', req.query)
+  fetchIndexJSON: (req, callback) => @fetchJSON req, @whitelist.index, callback
+  fetchShowJSON: (req, callback) => @fetchJSON req, @whitelist.show, callback
+
+  fetchJSON: (req, whitelist, callback) =>
+    console.log('**SLOW fetchJSON', req.query)
     query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
     cursor = @model_type.cursor(query)
-    cursor = cursor.whiteList(@whitelist.index) if @whitelist.index
+    cursor = cursor.whiteList(whitelist) if whitelist
+
     cursor.toJSON (err, json) =>
       return @sendError(res, err) if err
 
@@ -161,7 +162,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
       unless json
         if cursor.hasCursorQuery('$one')
-          return callback(null, null, 400)
+          return callback(null, null, 404)
         else
           return callback(null, json)
 
@@ -173,23 +174,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       else if cursor.hasCursorQuery('$values')
         callback(null, json)
       else
-        @render req, json, (err, rendered_json) =>
-          return @sendError(res, err) if err
-          callback(null, json)
-
-  fetchShowJSON: (req, res) =>
-    console.log('**SLOW fetchShowJSON', req.query)
-    cursor = @model_type.cursor(@requestId(req))
-    cursor = cursor.whiteList(@whitelist.show) if @whitelist.show
-    cursor.toJSON (err, json) =>
-      return callback(err) if err
-      return callback(null, json, 404) unless json
-      json = _.pick(json, @whitelist.show) if @whitelist.show
-
-      @render req, json, (err, json) =>
-        return callback(err) if err
-        res.json(json)
-        callback(null, json)
+        @render req, json, callback
 
   render: (req, json, callback) =>
     template_name = req.query.$render or req.query.$template or @default_template

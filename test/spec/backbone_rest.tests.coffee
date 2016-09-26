@@ -63,7 +63,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should return json for all models with no query', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -76,7 +76,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -90,7 +90,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key respecting whitelist (key included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -104,7 +104,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -118,7 +118,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -132,7 +132,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (keys included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -146,7 +146,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -160,7 +160,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (keys excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -174,7 +174,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -188,7 +188,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key (when a template is present)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, templates: {show: {$select: ['name']}}, default_template: 'show'})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, templates: {show: {$select: ['name']}}, default_template: 'show'})
 
         request(app)
         .get(ROUTE)
@@ -202,7 +202,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key (in array)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -216,7 +216,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key respecting whitelist (key included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name']}})
 
         request(app)
           .get(ROUTE)
@@ -230,7 +230,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -244,7 +244,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -258,7 +258,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (keys included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -272,7 +272,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name']}})
 
         request(app)
           .get(ROUTE)
@@ -286,7 +286,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (keys excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -298,29 +298,6 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
             assert.deepEqual(expected = sortA(_.map(MODELS_JSON, (item) -> [])), actual = sortA(res.body), "Expected: #{JSONUtils.stringify(expected)}. Actual: #{JSONUtils.stringify(actual)}")
             done()
 
-      it 'should trigger pre:index and post:index events on index', (done) ->
-        app = APP_FACTORY()
-
-        class EventController extends RestController
-          constructor: ->
-            super(app, {model_type: Flat, route: ROUTE})
-        controller = new EventController()
-
-        pre_triggered = false
-        post_triggered = false
-        EventController.on 'pre:index', (req) -> pre_triggered = true if req
-        EventController.on 'post:index', (json) -> post_triggered = true if json
-
-        request(app)
-        .get(ROUTE)
-        .type('json')
-        .end (err, res) ->
-            assert.ok(!err, "no errors: #{err}")
-            assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
-            assert.ok(pre_triggered, "Pre event trigger: #{pre_triggered}")
-            assert.ok(pre_triggered, "Post event trigger: #{post_triggered}")
-            done()
-
     ######################################
     # show
     ######################################
@@ -328,12 +305,13 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'show', ->
       it 'should find an existing model', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get("#{ROUTE}/#{MODELS_JSON[0].id}")
           .type('json')
           .end (err, res) ->
+            console.dir(res.body, {depth: null, colors: true})
             assert.ok(!err, "no errors: #{err}")
             assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
             assert.deepEqual(expected = MODELS_JSON[0], actual = JSONUtils.parse(res.body), "Expected: #{JSONUtils.stringify(expected)}. Actual: #{JSONUtils.stringify(actual)}")
@@ -341,7 +319,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should find an existing model with whitelist', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {show: ['id', 'name', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {show: ['id', 'name', 'created_at']}})
 
         attributes = _.clone(MODELS_JSON[0])
         request(app)
@@ -353,29 +331,6 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
             assert.deepEqual(expected = _.pick(attributes, ['id', 'name', 'created_at']), actual = JSONUtils.parse(res.body), "Expected: #{JSONUtils.stringify(expected)}. Actual: #{JSONUtils.stringify(actual)}")
             done()
 
-      it 'should trigger pre:show and post:show events on show', (done) ->
-        app = APP_FACTORY()
-
-        class EventController extends RestController
-          constructor: ->
-            super(app, {model_type: Flat, route: ROUTE})
-        controller = new EventController()
-
-        pre_triggered = false
-        post_triggered = false
-        EventController.on 'pre:show', (req) -> pre_triggered = true if req
-        EventController.on 'post:show', (json) -> post_triggered = true if json
-
-        request(app)
-        .get("#{ROUTE}/#{MODELS_JSON[0].id}")
-        .type('json')
-        .end (err, res) ->
-            assert.ok(!err, "no errors: #{err}")
-            assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
-            assert.ok(pre_triggered, "Pre event trigger: #{pre_triggered}")
-            assert.ok(pre_triggered, "Post event trigger: #{post_triggered}")
-            done()
-
     ######################################
     # create
     ######################################
@@ -383,7 +338,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'create', ->
       it 'should create a new model and assign an id', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         attributes = {name: _.uniqueId('name_'), created_at: (new Date).toISOString(), updated_at: (new Date).toISOString()}
         request(app)
@@ -398,7 +353,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should create a new model and assign an id with whitelist', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {create: ['id', 'name', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {create: ['id', 'name', 'updated_at']}})
 
         attributes = {name: _.uniqueId('name_'), created_at: (new Date).toISOString(), updated_at: (new Date).toISOString()}
         request(app)
@@ -418,7 +373,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
         class EventController extends RestController
           constructor: ->
-            super(app, {model_type: Flat, route: ROUTE})
+            super(app, {model_type: Flat, route: ROUTE, default_template: null})
         controller = new EventController()
 
         pre_triggered = false
@@ -434,7 +389,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
             assert.ok(!err, "no errors: #{err}")
             assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
             assert.ok(pre_triggered, "Pre event trigger: #{pre_triggered}")
-            assert.ok(pre_triggered, "Post event trigger: #{post_triggered}")
+            assert.ok(post_triggered, "Post event trigger: #{post_triggered}")
             done()
 
     ######################################
@@ -444,7 +399,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'update', ->
       it 'should update an existing model', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         attributes = _.clone(MODELS_JSON[1])
         attributes.name = "#{attributes.name}_#{_.uniqueId('name')}"
@@ -459,7 +414,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should update an existing model with whitelist', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {update: ['id', 'name', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {update: ['id', 'name', 'updated_at']}})
 
         attributes = _.clone(MODELS_JSON[1])
         attributes.name = "#{attributes.name}_#{_.uniqueId('name')}"
@@ -477,7 +432,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
         class EventController extends RestController
           constructor: ->
-            super(app, {model_type: Flat, route: ROUTE})
+            super(app, {model_type: Flat, route: ROUTE, default_template: null})
         controller = new EventController()
 
         pre_triggered = false
@@ -494,7 +449,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
             assert.ok(!err, "no errors: #{err}")
             assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
             assert.ok(pre_triggered, "Pre event trigger: #{pre_triggered}")
-            assert.ok(pre_triggered, "Post event trigger: #{post_triggered}")
+            assert.ok(post_triggered, "Post event trigger: #{post_triggered}")
             done()
 
     ######################################
@@ -504,7 +459,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'delete', ->
       it 'should delete an existing model', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         id = MODELS_JSON[1].id
         request(app)
@@ -525,7 +480,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
         class EventController extends RestController
           constructor: ->
-            super(app, {model_type: Flat, route: ROUTE})
+            super(app, {model_type: Flat, route: ROUTE, default_template: null})
         controller = new EventController()
 
         pre_triggered = false
@@ -540,7 +495,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
             assert.ok(!err, "no errors: #{err}")
             assert.equal(res.status, 200, "status not 200. Status: #{res.status}. Body: #{JSONUtils.stringify(res.body)}")
             assert.ok(pre_triggered, "Pre event trigger: #{pre_triggered}")
-            assert.ok(pre_triggered, "Post event trigger: #{post_triggered}")
+            assert.ok(post_triggered, "Post event trigger: #{post_triggered}")
             done()
 
     ######################################
@@ -550,7 +505,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'head', ->
       it 'should test existence of a model by id', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         id = MODELS_JSON[1].id
         request(app)
@@ -576,7 +531,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should test existence of a model by id ($exists)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         id = MODELS_JSON[1].id
         request(app)
@@ -606,7 +561,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should test existence of a model by name', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         id = MODELS_JSON[1].id
         name = MODELS_JSON[1].name
@@ -635,7 +590,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should test existence of a model by name ($exists)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         id = MODELS_JSON[1].id
         name = MODELS_JSON[1].name

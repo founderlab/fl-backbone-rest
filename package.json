@@ -32,6 +32,7 @@
   "devDependencies": {
     "async": "*",
     "body-parser": "1.x",
+    "cache-manager": "^2.1.2",
     "coffee-script": "*",
     "event-stream": "*",
     "express": "4.x",

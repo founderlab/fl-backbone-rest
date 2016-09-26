@@ -62,7 +62,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
     describe 'index', ->
       it 'should return json for all models with no query', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -76,7 +76,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -90,7 +90,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key respecting whitelist (key included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -104,7 +104,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by single key respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -118,7 +118,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -132,7 +132,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (keys included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -146,7 +146,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -160,7 +160,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested keys by an array of keys respecting whitelist (keys excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
@@ -174,7 +174,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -188,7 +188,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key (in array)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -202,7 +202,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key respecting whitelist (key included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name']}})
 
         request(app)
           .get(ROUTE)
@@ -216,7 +216,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by single key respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -230,7 +230,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
@@ -244,7 +244,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (keys included)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name', 'created_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name', 'created_at']}})
 
         request(app)
           .get(ROUTE)
@@ -258,7 +258,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (key excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'name']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'name']}})
 
         request(app)
           .get(ROUTE)
@@ -272,7 +272,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
       it 'should select requested values by an array of keys respecting whitelist (keys excluded)', (done) ->
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE, whitelist: {index: ['id', 'updated_at']}})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, whitelist: {index: ['id', 'updated_at']}})
 
         request(app)
           .get(ROUTE)
