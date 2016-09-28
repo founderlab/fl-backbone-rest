@@ -6,6 +6,7 @@
 
 path = require 'path'
 {_, Backbone, Utils, JSONUtils} = require 'backbone-orm'
+Queue = require 'queue-async'
 
 JoinTableControllerSingleton = require './lib/join_table_controller_singleton'
 
@@ -32,60 +33,50 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
     @db = (_.result(new @model_type, 'url') || '').split(':')[0]
 
+    if _.isUndefined(@templates.show)
+      schema = @model_type.prototype.sync('sync').schema
+      schemaKeys = _.keys(schema.type_overrides).concat(_.keys(schema.fields))
+      @templates.show = {$select: schemaKeys}
+    @default_template = 'show' if _.isUndefined(@templates.show)
+
+    if @cache
+      @cache.hash or= @route
     JoinTableControllerSingleton.generateByOptions(app, options)
 
-  requestId: (req) -> JSONUtils.parseField(req.params.id, @model_type, 'id')
+  requestId: (req) => JSONUtils.parseField(req.params.id, @model_type, 'id')
 
-  index: (req, res) ->
+  index: (req, res) =>
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
 
-    event_data = {req: req, res: res}
-    @constructor.trigger('pre:index', event_data)
-
-    query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
-    cursor = @model_type.cursor(query)
-    cursor = cursor.whiteList(@whitelist.index) if @whitelist.index
-    cursor.toJSON (err, json) =>
+    done = (err, result) =>
+      {json, status} = result
       return @sendError(res, err) if err
+      return @sendStatus(res, status) if status
+      res.json(json)
 
-      @constructor.trigger('post:index', _.extend(event_data, {json: json}))
+    if (cache = @cache?.cache)
+      key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
+      return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
+    else
+      @fetchIndexJSON req, done
 
-      return res.json({result: json}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
-      unless json
-        if cursor.hasCursorQuery('$one')
-          return @sendStatus(res, 404)
-        else
-          return res.json(json)
-
-      if cursor.hasCursorQuery('$page')
-        @render req, json.rows, (err, rendered_json) =>
-          return @sendError(res, err) if err
-          json.rows = rendered_json
-          res.json(json)
-      else if cursor.hasCursorQuery('$values')
-        res.json(json)
-      else
-        @render req, json, (err, rendered_json) =>
-          return @sendError(res, err) if err
-          res.json(rendered_json)
-
-  show: (req, res) ->
-    event_data = {req: req, res: res}
-    @constructor.trigger('pre:show', event_data)
-
-    cursor = @model_type.cursor(@requestId(req))
-    cursor = cursor.whiteList(@whitelist.show) if @whitelist.show
-    cursor.toJSON (err, json) =>
+  show: (req, res) =>
+    done = (err, result) =>
+      {json, status} = result
       return @sendError(res, err) if err
-      return @sendStatus(res, 404) unless json
-      json = _.pick(json, @whitelist.show) if @whitelist.show
+      return @sendStatus(res, status) if status
+      res.json(json)
 
-      @constructor.trigger('post:show', _.extend(event_data, {json: json}))
-      @render req, json, (err, json) =>
-        return @sendError(res, err) if err
-        res.json(json)
+    req.query.id = @requestId(req)
+    req.query.$one = true
 
-  create: (req, res) ->
+    if (cache = @cache?.cache)
+      key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
+      return cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), @cache, done
+    else
+      @fetchShowJSON req, done
+
+  create: (req, res) =>
     json = JSONUtils.parseDates(if @whitelist.create then _.pick(req.body, @whitelist.create) else req.body)
     model = new @model_type(@model_type::parse(json))
 
@@ -94,15 +85,16 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
     model.save (err) =>
       return @sendError(res, err) if err
+      @clearCache()
 
       event_data.model = model
       json = if @whitelist.create then _.pick(model.toJSON(), @whitelist.create) else model.toJSON()
       @render req, json, (err, json) =>
         return @sendError(res, err) if err
-        @constructor.trigger('post:create', _.extend(event_data, {json: json}))
+        @constructor.trigger('post:create', _.extend(event_data, {json}))
         res.json(json)
 
-  update: (req, res) ->
+  update: (req, res) =>
     json = JSONUtils.parseDates(if @whitelist.update then _.pick(req.body, @whitelist.update) else req.body)
 
     @model_type.find @requestId(req), (err, model) =>
@@ -114,15 +106,16 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
       model.save model.parse(json), (err) =>
         return @sendError(res, err) if err
+        @clearCache()
 
         event_data.model = model
         json = if @whitelist.update then _.pick(model.toJSON(), @whitelist.update) else model.toJSON()
         @render req, json, (err, json) =>
           return @sendError(res, err) if err
-          @constructor.trigger('post:update', _.extend(event_data, {json: json}))
+          @constructor.trigger('post:update', _.extend(event_data, {json}))
           res.json(json)
 
-  destroy: (req, res) ->
+  destroy: (req, res) =>
     event_data = {req: req, res: res}
     @constructor.trigger('pre:destroy', event_data)
 
@@ -132,28 +125,71 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
       @model_type.destroy id, (err) =>
         return @sendError(res, err) if err
+        @clearCache()
         @constructor.trigger('post:destroy', event_data)
         res.json({})
 
-  destroyByQuery: (req, res) ->
+  destroyByQuery: (req, res) =>
     event_data = {req: req, res: res}
     @constructor.trigger('pre:destroyByQuery', event_data)
     @model_type.destroy JSONUtils.parseQuery(req.query), (err) =>
       return @sendError(res, err) if err
+      @clearCache()
       @constructor.trigger('post:destroyByQuery', event_data)
       res.json({})
 
-  head: (req, res) ->
+  head: (req, res) =>
     @model_type.exists @requestId(req), (err, exists) =>
       return @sendError(res, err) if err
       @sendStatus(res, if exists then 200 else 404)
 
-  headByQuery: (req, res) ->
+  headByQuery: (req, res) =>
     @model_type.exists JSONUtils.parseQuery(req.query), (err, exists) =>
       return @sendError(res, err) if err
       @sendStatus(res, if exists then 200 else 404)
 
-  render: (req, json, callback) ->
+  clearCache: () =>
+    return unless cache = @cache?.cache
+    return unless cache.store.hreset
+    queue = new Queue()
+    hash_keys = [@cache.hash].concat(k for k in @cache.cascade or [])
+
+    for hash_key in hash_keys
+      do (hash_key) -> queue.defer (callback) -> cache.store.hreset hash_key, callback
+
+    queue.await (err) =>
+      console.log("[#{@model_type.name} controller] Error clearing cache: ", err) if err
+
+  fetchIndexJSON: (req, callback) => @fetchJSON req, @whitelist.index, callback
+  fetchShowJSON: (req, callback) => @fetchJSON req, @whitelist.show, callback
+
+  fetchJSON: (req, whitelist, callback) =>
+    query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
+    cursor = @model_type.cursor(query)
+    cursor = cursor.whiteList(whitelist) if whitelist
+
+    cursor.toJSON (err, json) =>
+      return @sendError(res, err) if err
+
+      return callback(null, {json: {result: json}}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
+
+      unless json
+        if cursor.hasCursorQuery('$one')
+          return callback(null, {status: 404})
+        else
+          return callback(null, {json})
+
+      if cursor.hasCursorQuery('$page')
+        @render req, json.rows, (err, rendered_json) =>
+          return @sendError(res, err) if err
+          json.rows = rendered_json
+          callback(null, {json})
+      else if cursor.hasCursorQuery('$values')
+        callback(null, {json})
+      else
+        @render req, json, (err, rendered_json) => callback(err, {json: rendered_json})
+
+  render: (req, json, callback) =>
     template_name = req.query.$render or req.query.$template or @default_template
     return callback(null, json) unless template_name
     try template_name = JSON.parse(template_name) # remove double quotes
@@ -169,7 +205,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
     models = if _.isArray(json) then _.map(json, (model_json) => new @model_type(@model_type::parse(model_json))) else new @model_type(@model_type::parse(json))
     JSONUtils.renderTemplate models, template, options, callback
 
-  parseSearchQuery: (query) ->
+  parseSearchQuery: (query) =>
     new_query = {}
     return query unless _.isObject(query) and not (query instanceof Date)
 
@@ -189,7 +225,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
         new_query[key] = value
     return new_query
 
-  stripRev: (obj) ->
+  stripRev: (obj) =>
     return (@stripRev(o) for o in obj) if _.isArray(obj)
     return obj unless _.isObject(obj) and not obj instanceof Date
 

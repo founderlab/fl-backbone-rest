@@ -57,7 +57,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: index', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['index']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['index']})
 
       request(app)
         .get(ROUTE)
@@ -69,7 +69,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: show', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['show']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['show']})
 
       request(app)
         .get("#{ROUTE}/1")
@@ -81,7 +81,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: create', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['create']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['create']})
 
       request(app)
         .post(ROUTE)
@@ -94,7 +94,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: update', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['update']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['update']})
 
       request(app)
         .put("#{ROUTE}/1")
@@ -107,7 +107,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: destroy', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['destroy']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['destroy']})
 
       request(app)
         .del("#{ROUTE}/1")
@@ -118,7 +118,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: destroyByQuery', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['destroyByQuery']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['destroyByQuery']})
 
       request(app)
         .del(ROUTE)
@@ -131,7 +131,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: head', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['head']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['head']})
 
       request(app)
         .head("#{ROUTE}/1")
@@ -143,7 +143,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'Blocking routes: headByQuery', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['headByQuery']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['headByQuery']})
 
       request(app)
         .head(ROUTE)
@@ -158,7 +158,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       app = APP_FACTORY()
       headers = _.clone(RestController.headers)
       RestController.configure({headers: _.extend({ETag: '1234'}, headers)})
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['headByQuery']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['headByQuery']})
 
       request(app)
         .head(ROUTE)
@@ -178,7 +178,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
 
     it 'configure headers', (done) ->
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE, blocked: ['headByQuery']})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null, blocked: ['headByQuery']})
       controller.configure({headers: _.extend({ETag: '1234'}, controller.headers)})
 
       request(app)

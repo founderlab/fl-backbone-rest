@@ -59,7 +59,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       LIMIT = 3
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get(ROUTE)
@@ -77,7 +77,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       LIMIT = 3
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get("#{ROUTE}?$page&$limit=#{LIMIT}")
@@ -94,7 +94,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       LIMIT = 3
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get(ROUTE)
@@ -110,7 +110,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       LIMIT = 2; OFFSET = 1
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get(ROUTE)
@@ -128,7 +128,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       FIELD_NAMES = ['id', 'name']
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get(ROUTE)
@@ -145,7 +145,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
       FIELD_NAMES = ['id', 'name']
 
       app = APP_FACTORY()
-      controller = new RestController(app, {model_type: Flat, route: ROUTE})
+      controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
       request(app)
         .get(ROUTE)
@@ -166,7 +166,7 @@ _.each BackboneORM.TestUtils.optionSets(), exports = (options) ->
         assert.ok(!!model, 'model')
 
         app = APP_FACTORY()
-        controller = new RestController(app, {model_type: Flat, route: ROUTE})
+        controller = new RestController(app, {model_type: Flat, route: ROUTE, default_template: null})
 
         request(app)
           .get(ROUTE)
