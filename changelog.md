@@ -1,7 +1,17 @@
 Please refer to the following release notes when upgrading your version of BackboneREST.
 
 ### 0.9.0
-* Support for caching index and show routes. Configure with a `cache` prop ont he controllers options. Expects an instance of [cache-manager](https://github.com/BryanDonovan/node-cache-manager) to be provided. Options are: `{cache: cacheInstance, ttl: 30000, clearOn: ['put', 'post']}, ...}`
+* Support for caching index and show routes. Configure with a `cache` prop ont he controllers options. Expects an instance of [cache-manager](https://github.com/BryanDonovan/node-cache-manager) to be provided. Options are: 
+```javascript
+{
+  cache: {
+    cache: cacheInstance, 
+    ttl: 30000, 
+    hash: 'cache hash key prefix', 
+    cascade: [...list of related keys to clear on updates],
+  }, 
+  ...
+}```
 
 ### 0.8.0
 * Support for raw templates
