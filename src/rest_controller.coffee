@@ -6,6 +6,7 @@
 
 path = require 'path'
 {_, Backbone, Utils, JSONUtils} = require 'backbone-orm'
+Queue = require 'queue-async'
 
 JoinTableControllerSingleton = require './lib/join_table_controller_singleton'
 
@@ -38,40 +39,39 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @templates.show = {$select: schemaKeys}
     @default_template = 'show' if _.isUndefined(@templates.show)
 
+    if @cache
+      @cache.hash or= @route
     JoinTableControllerSingleton.generateByOptions(app, options)
 
   requestId: (req) => JSONUtils.parseField(req.params.id, @model_type, 'id')
 
   index: (req, res) =>
-    console.log('**>>> index start', @route, req.query)
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
 
-    done = (err, json, status) =>
+    done = (err, result) =>
+      {json, status} = result
       return @sendError(res, err) if err
       return @sendStatus(res, status) if status
-      console.log('**>>> index done', json?.length, '\n\n\n')
       res.json(json)
 
     if (cache = @cache?.cache)
-      key = "bbrshow|#{@route}|#{JSON.stringify(req.query)}"
+      key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
     else
       @fetchIndexJSON req, done
 
   show: (req, res) =>
-    console.log('**>>> show start', @route, req.query)
-
-    done = (err, json, status) =>
+    done = (err, result) =>
+      {json, status} = result
       return @sendError(res, err) if err
       return @sendStatus(res, status) if status
-      console.log('**>>> show done', json, '\n\n\n')
       res.json(json)
 
     req.query.id = @requestId(req)
     req.query.$one = true
 
     if (cache = @cache?.cache)
-      key = "bbrshow|#{@route}|#{JSON.stringify(req.query)}"
+      key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), @cache, done
     else
       @fetchShowJSON req, done
@@ -85,6 +85,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
     model.save (err) =>
       return @sendError(res, err) if err
+      @clearCache()
 
       event_data.model = model
       json = if @whitelist.create then _.pick(model.toJSON(), @whitelist.create) else model.toJSON()
@@ -105,6 +106,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
       model.save model.parse(json), (err) =>
         return @sendError(res, err) if err
+        @clearCache()
 
         event_data.model = model
         json = if @whitelist.update then _.pick(model.toJSON(), @whitelist.update) else model.toJSON()
@@ -123,9 +125,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
       @model_type.destroy id, (err) =>
         return @sendError(res, err) if err
+        @clearCache()
         @constructor.trigger('post:destroy', event_data)
-        if cache = @cache?.cache
-          cache.destroy()
         res.json({})
 
   destroyByQuery: (req, res) =>
@@ -133,6 +134,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
     @constructor.trigger('pre:destroyByQuery', event_data)
     @model_type.destroy JSONUtils.parseQuery(req.query), (err) =>
       return @sendError(res, err) if err
+      @clearCache()
       @constructor.trigger('post:destroyByQuery', event_data)
       res.json({})
 
@@ -146,11 +148,22 @@ module.exports = class RESTController extends (require './lib/json_controller')
       return @sendError(res, err) if err
       @sendStatus(res, if exists then 200 else 404)
 
+  clearCache: () =>
+    return unless cache = @cache?.cache
+    return unless cache.store.hreset
+    queue = new Queue()
+    hash_keys = [@cache.hash].concat(k for k in @cache.cascade or [])
+
+    for hash_key in hash_keys
+      do (hash_key) -> queue.defer (callback) -> cache.store.hreset hash_key, callback
+
+    queue.await (err) =>
+      console.log("[#{@model_type.name} controller] Error clearing cache: ", err) if err
+
   fetchIndexJSON: (req, callback) => @fetchJSON req, @whitelist.index, callback
   fetchShowJSON: (req, callback) => @fetchJSON req, @whitelist.show, callback
 
   fetchJSON: (req, whitelist, callback) =>
-    console.log('**SLOW fetchJSON', req.query)
     query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
     cursor = @model_type.cursor(query)
     cursor = cursor.whiteList(whitelist) if whitelist
@@ -158,23 +171,23 @@ module.exports = class RESTController extends (require './lib/json_controller')
     cursor.toJSON (err, json) =>
       return @sendError(res, err) if err
 
-      return callback(null, {result: json}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
+      return callback(null, {json: {result: json}}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
 
       unless json
         if cursor.hasCursorQuery('$one')
-          return callback(null, null, 404)
+          return callback(null, {status: 404})
         else
-          return callback(null, json)
+          return callback(null, {json})
 
       if cursor.hasCursorQuery('$page')
         @render req, json.rows, (err, rendered_json) =>
           return @sendError(res, err) if err
           json.rows = rendered_json
-          callback(null, json)
+          callback(null, {json})
       else if cursor.hasCursorQuery('$values')
-        callback(null, json)
+        callback(null, {json})
       else
-        @render req, json, callback
+        @render req, json, (err, rendered_json) => callback(err, {json: rendered_json})
 
   render: (req, json, callback) =>
     template_name = req.query.$render or req.query.$template or @default_template
