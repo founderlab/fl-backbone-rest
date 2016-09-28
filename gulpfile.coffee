@@ -26,14 +26,14 @@ testFn = (options={}) -> (callback) ->
   tags = ("@#{tag.replace(/^[-]+/, '')}" for tag in process.argv.slice(3)).join(' ')
   gutil.log "Running tests for #{options.framework} #{tags}"
 
-  # gulp.src("test/spec/**/*.tests.coffee")
-  gulp.src("test/spec/**/cache.tests.coffee")
+  gulp.src("test/spec/**/*.tests.coffee")
+  # gulp.src("test/spec/**/cache.tests.coffee")
     .pipe(mocha(_.extend({reporter: 'dot', grep: tags}, MOCHA_FRAMEWORK_OPTIONS[options.framework])))
     .pipe es.writeArray callback
   return # promises workaround: https://github.com/gulpjs/gulp/issues/455
 
-gulp.task 'test', (callback) ->
-# gulp.task 'test', ['build', 'install-express3-dependencies'], (callback) ->
+# gulp.task 'test', (callback) ->
+gulp.task 'test', ['build', 'install-express3-dependencies'], (callback) ->
   Async.series (testFn({framework: framework_name}) for framework_name of MOCHA_FRAMEWORK_OPTIONS), callback
   return # promises workaround: https://github.com/gulpjs/gulp/issues/455
 gulp.task 'test-express4', ['build'], testFn({framework: 'express4'})
