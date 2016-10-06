@@ -1,5 +1,8 @@
 Please refer to the following release notes when upgrading your version of BackboneREST.
 
+### 0.9.1
+* Strip _rev keys and null and undefined values from response JSON
+
 ### 0.9.0
 * Support for caching index and show routes. Configure with a `cache` prop ont he controllers options. Expects an instance of [cache-manager](https://github.com/BryanDonovan/node-cache-manager) to be provided. Options are: 
 ```javascript
