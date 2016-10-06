@@ -190,20 +190,22 @@ module.exports = class RESTController extends (require './lib/json_controller')
         @render req, json, (err, rendered_json) => callback(err, {json: rendered_json})
 
   render: (req, json, callback) =>
+    done = (err, rendered_json) =>
+      return callback(err) if (err)
+      callback(null, @clean(rendered_json))
+
     template_name = req.query.$render or req.query.$template or @default_template
-    return callback(null, json) unless template_name
+    return done(null, json) unless template_name
     try template_name = JSON.parse(template_name) # remove double quotes
     return callback(new Error "Unrecognized template: #{template_name}") unless template = @templates[template_name]
 
     options = (if @renderOptions then @renderOptions(req, template_name) else {})
 
     if template.$raw
-      return template json, options, (err, rendered_json) =>
-        return callback(err) if (err)
-        callback(null, @stripRev(rendered_json))
+      return template json, options, done
 
     models = if _.isArray(json) then _.map(json, (model_json) => new @model_type(@model_type::parse(model_json))) else new @model_type(@model_type::parse(json))
-    JSONUtils.renderTemplate models, template, options, callback
+    JSONUtils.renderTemplate models, template, options, done
 
   parseSearchQuery: (query) =>
     new_query = {}
@@ -225,11 +227,11 @@ module.exports = class RESTController extends (require './lib/json_controller')
         new_query[key] = value
     return new_query
 
-  stripRev: (obj) =>
-    return (@stripRev(o) for o in obj) if _.isArray(obj)
-    return obj unless _.isObject(obj) and not obj instanceof Date
+  clean: (obj) =>
+    return (@clean(o) for o in obj) if _.isArray(obj)
+    return obj unless (_.isObject(obj) and not (obj instanceof Date))
 
     final_obj = {}
-    for key, value of obj when key isnt '_rev'
-      final_obj[key] = @stripRev(value)
+    for key, value of obj when key isnt '_rev' and not (_.isUndefined(value) or _.isNull(value))
+      final_obj[key] = @clean(value)
     return final_obj
