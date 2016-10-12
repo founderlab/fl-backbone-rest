@@ -40,6 +40,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
     @default_template = 'show' if _.isUndefined(@templates.show)
 
     if @cache
+      @cache = _.pick(@cache, 'cache', 'hash', 'cascade')
       @cache.hash or= @route
     JoinTableControllerSingleton.generateByOptions(app, options)
 
@@ -52,10 +53,12 @@ module.exports = class RESTController extends (require './lib/json_controller')
       {json, status} = result
       return @sendError(res, err) if err
       return @sendStatus(res, status) if status
+      console.log('fetched', json.length)
       res.json(json)
 
     if (cache = @cache?.cache)
       key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
+      console.log('fetchIndexJSON', key)
       return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
     else
       @fetchIndexJSON req, done
@@ -149,6 +152,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @sendStatus(res, if exists then 200 else 404)
 
   clearCache: () =>
+    console.log('>>>>>>>>>>>CACHE CLEARED<<<<<<<<<<<<')
     return unless cache = @cache?.cache
     return unless cache.store.hreset
     queue = new Queue()
@@ -187,6 +191,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       else if cursor.hasCursorQuery('$values')
         callback(null, {json})
       else
+        console.log('********SLOW JSON*******')
         @render req, json, (err, rendered_json) => callback(err, {json: rendered_json})
 
   render: (req, json, callback) =>
