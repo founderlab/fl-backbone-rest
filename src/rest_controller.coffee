@@ -40,8 +40,11 @@ module.exports = class RESTController extends (require './lib/json_controller')
     @default_template = 'show' if _.isUndefined(@templates.show)
 
     if @cache
-      @cache = _.pick(@cache, 'cache', 'hash', 'cascade')
-      @cache.hash or= @route
+      @cache = _.pick(@cache, 'cache', 'hash', 'createHash', 'cascade')
+      if @cache.createHash and not @cache.hash
+        @cache.hash = @cache.createHash(@)
+      else
+        @cache.hash or= @route
     JoinTableControllerSingleton.generateByOptions(app, options)
 
   requestId: (req) => JSONUtils.parseField(req.params.id, @model_type, 'id')
