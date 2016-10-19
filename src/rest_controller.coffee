@@ -53,8 +53,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
 
     done = (err, result) =>
-      {json, status} = result
       return @sendError(res, err) if err
+      {json, status} = result
       return @sendStatus(res, status) if status
       res.json(json)
 
@@ -66,8 +66,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
   show: (req, res) =>
     done = (err, result) =>
-      {json, status} = result
       return @sendError(res, err) if err
+      {json, status} = result
       return @sendStatus(res, status) if status
       res.json(json)
 
@@ -173,7 +173,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
     cursor = cursor.whiteList(whitelist) if whitelist
 
     cursor.toJSON (err, json) =>
-      return @sendError(res, err) if err
+      return callback(err) if err
 
       return callback(null, {json: {result: json}}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
 
