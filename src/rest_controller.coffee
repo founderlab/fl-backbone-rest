@@ -152,7 +152,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       return @sendError(res, err) if err
       @sendStatus(res, if exists then 200 else 404)
 
-  clearCache: () =>
+  clearCache: (callback) =>
     return unless cache = @cache?.cache
     return unless cache.store.hreset
     queue = new Queue()
@@ -163,6 +163,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
     queue.await (err) =>
       console.log("[#{@model_type.name} controller] Error clearing cache: ", err) if err
+      callback(err) if callback
 
   fetchIndexJSON: (req, callback) => @fetchJSON req, @whitelist.index, callback
   fetchShowJSON: (req, callback) => @fetchJSON req, @whitelist.show, callback
