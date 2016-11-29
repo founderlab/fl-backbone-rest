@@ -53,19 +53,22 @@ module.exports = class RESTController extends (require './lib/json_controller')
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
 
     done = (err, result) =>
+      console.timeEnd(key) if @verbose
       return @sendError(res, err) if err
       {json, status} = result
       return @sendStatus(res, status) if status
       res.json(json)
 
+    key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
+    console.time(key) if @verbose
     if (cache = @cache?.cache)
-      key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
     else
       @fetchIndexJSON req, done
 
   show: (req, res) =>
     done = (err, result) =>
+      console.timeEnd(key) if @verbose
       return @sendError(res, err) if err
       {json, status} = result
       return @sendStatus(res, status) if status
@@ -74,8 +77,9 @@ module.exports = class RESTController extends (require './lib/json_controller')
     req.query.id = @requestId(req)
     req.query.$one = true
 
+    key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
+    console.time(key) if @verbose
     if (cache = @cache?.cache)
-      key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), @cache, done
     else
       @fetchShowJSON req, done
@@ -157,6 +161,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
     return unless cache.store.hreset
     queue = new Queue()
     hash_keys = [@cache.hash].concat(k for k in @cache.cascade or [])
+    console.log('clearCache keys', hash_keys)
 
     for hash_key in hash_keys
       do (hash_key) -> queue.defer (callback) -> cache.store.hreset hash_key, callback
@@ -196,10 +201,13 @@ module.exports = class RESTController extends (require './lib/json_controller')
 
   render: (req, json, callback) =>
     done = (err, rendered_json) =>
+      console.timeEnd(key) if @verbose
       return callback(err) if (err)
       callback(null, @clean(rendered_json))
 
     template_name = req.query.$render or req.query.$template or @default_template
+    key = "render_#{template_name}_#{JSON.stringify(req.query)}"
+    console.time(key) if @verbose
     return done(null, json) unless template_name
     try template_name = JSON.parse(template_name) # remove double quotes
     return callback(new Error "Unrecognized template: #{template_name}") unless template = @templates[template_name]
