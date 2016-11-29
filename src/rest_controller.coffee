@@ -53,22 +53,22 @@ module.exports = class RESTController extends (require './lib/json_controller')
     return @headByQuery.apply(@, arguments) if req.method is 'HEAD' # Express4
 
     done = (err, result) =>
-      console.timeEnd(key) if @verbose
+      console.timeEnd("index_#{@route}") if @verbose
       return @sendError(res, err) if err
       {json, status} = result
       return @sendStatus(res, status) if status
       res.json(json)
 
-    key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
-    console.time(key) if @verbose
+    console.time("index_#{@route}") if @verbose
     if (cache = @cache?.cache)
+      key = "#{@cache.hash}|index_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchIndexJSON(req, callback)), @cache, done
     else
       @fetchIndexJSON req, done
 
   show: (req, res) =>
     done = (err, result) =>
-      console.timeEnd(key) if @verbose
+      console.timeEnd("show_#{@route}") if @verbose
       return @sendError(res, err) if err
       {json, status} = result
       return @sendStatus(res, status) if status
@@ -77,9 +77,9 @@ module.exports = class RESTController extends (require './lib/json_controller')
     req.query.id = @requestId(req)
     req.query.$one = true
 
-    key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
-    console.time(key) if @verbose
+    console.time("show_#{@route}") if @verbose
     if (cache = @cache?.cache)
+      key = "#{@cache.hash}|show_#{JSON.stringify(req.query)}"
       return cache.wrap key, ((callback) => @fetchShowJSON(req, callback)), @cache, done
     else
       @fetchShowJSON req, done
@@ -174,11 +174,15 @@ module.exports = class RESTController extends (require './lib/json_controller')
   fetchShowJSON: (req, callback) => @fetchJSON req, @whitelist.show, callback
 
   fetchJSON: (req, whitelist, callback) =>
+    key = "fetchJSON_#{@route}"
+    console.time(key) if @verbose
+
     query = @parseSearchQuery(JSONUtils.parseQuery(req.query))
     cursor = @model_type.cursor(query)
     cursor = cursor.whiteList(whitelist) if whitelist
 
     cursor.toJSON (err, json) =>
+      console.timeEnd(key) if @verbose
       return callback(err) if err
 
       return callback(null, {json: {result: json}}) if cursor.hasCursorQuery('$count') or cursor.hasCursorQuery('$exists')
@@ -206,7 +210,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       callback(null, @clean(rendered_json))
 
     template_name = req.query.$render or req.query.$template or @default_template
-    key = "render_#{template_name}_#{JSON.stringify(req.query)}"
+    key = "render_#{template_name}_#{@route}"
     console.time(key) if @verbose
     return done(null, json) unless template_name
     try template_name = JSON.parse(template_name) # remove double quotes
