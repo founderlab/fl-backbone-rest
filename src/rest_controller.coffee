@@ -157,8 +157,8 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @sendStatus(res, if exists then 200 else 404)
 
   clearCache: (callback) =>
-    return unless cache = @cache?.cache
-    return unless cache.store.hreset
+    return callback() unless cache = @cache?.cache
+    return callback() unless cache.store.hreset
     queue = new Queue()
     hash_keys = [@cache.hash].concat(k for k in @cache.cascade or [])
     console.log('clearCache keys', hash_keys)
