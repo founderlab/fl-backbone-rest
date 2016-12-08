@@ -1,6 +1,6 @@
 {
   "name": "fl-backbone-rest",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "A RESTful controller for BackboneORM",
   "main": "./lib/index.js",
   "license": "MIT",
