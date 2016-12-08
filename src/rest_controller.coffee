@@ -157,6 +157,7 @@ module.exports = class RESTController extends (require './lib/json_controller')
       @sendStatus(res, if exists then 200 else 404)
 
   clearCache: (callback) =>
+    callback or= () =>
     return callback() unless cache = @cache?.cache
     return callback() unless cache.store.hreset
     queue = new Queue()
